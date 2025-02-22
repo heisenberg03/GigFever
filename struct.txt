@@ -1,0 +1,46 @@
+/GigHub
+ ├── /src
+ │   ├── /components
+ │   │   ├── Button.tsx
+ │   │   ├── Card.tsx
+ │   │   ├── SearchBar.tsx
+ │   │   ├── ChatBubble.tsx
+ │   ├── /screens
+ │   │   ├── HomeScreen.tsx
+ │   │   ├── ArtistsScreen.tsx
+ │   │   ├── ArtistProfileScreen.tsx
+ │   │   ├── EventsScreen.tsx
+ │   │   ├── EventDetailsScreen.tsx
+ │   │   ├── MessagingScreen.tsx
+ │   │   ├── MyEventsScreen.tsx
+ │   │   ├── MyBookingsScreen.tsx
+ │   │   ├── NotificationsScreen.tsx
+ │   │   ├── ProfileScreen.tsx
+ │   │   ├── SearchScreen.tsx ✅ (Updated Global Search)
+ │   │   ├── SettingsScreen.tsx ✅ (Logout Button Added)
+ │   ├── /navigation
+ │   │   ├── AppNavigator.tsx
+ │   ├── /api
+ │   │   ├── events.ts
+ │   │   ├── artists.ts
+ │   │   ├── applications.ts
+ │   │   ├── messages.ts
+ │   │   ├── notifications.ts
+ │   ├── /context
+ │   │   ├── ThemeContext.tsx
+ │   ├── /assets
+ │   │   ├── logo.png
+ │   │   ├── icons/
+ │   ├── /data
+ │   │   ├── events.json
+ │   │   ├── artists.json
+ │   │   ├── applications.json
+ │   │   ├── messages.json
+ │   │   ├── notifications.json
+ │   ├── /utils
+ │   │   ├── api.ts
+ │   │   ├── helpers.ts
+ ├── App.tsx
+ ├── package.json
+ ├── README.md
+ ├── .gitignore

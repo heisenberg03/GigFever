@@ -1,0 +1,155 @@
+GigFever Application – Comprehensive Overview & Architectural Plan
+1. Application Goal
+GigFever is a dynamic marketplace to empower local artists and event hosts. App enables users to host events and showcase their artistic talent from a single unified profile. Every user can create events, apply as an artist, manage their portfolio, and communicate in real time. The platform emphasizes a seamless user experience, transparent booking processes, and modern UI/UX.
+Support real‑time communication via chat and push notifications.
+Provide a modern, intuitive UI inspired by popular apps (such as Zomato, Airbnb, Instagram) that works flawlessly across devices (including those with notches).
+Deliver a unified search and filtering experience that covers artists, events, and categories.
+2. Technical Details & Technology Stack
+2.1. Frontend
+Framework & Runtime:
+
+React Native using Expo SDK 52, ensuring compatibility with both iOS and Android.
+Language: TypeScript
+Navigation:
+
+React Navigation with Stack and Bottom Tab navigators.
+Uses CommonActions.reset (via @react-navigation/native) to handle logout and state resets properly.
+Styling & UI:
+
+NativeWind for utility-first styling.
+React Native Reanimated 3 for smooth animations and transitions.
+Safe Area Context to handle device notches and varying screen sizes.
+Components & Screens:
+
+Reusable components such as UnifiedSearchBar, EventCardLarge, ArtistCard, and FilterModal.
+Screens for Authentication, Home, Artists, Events, Event Details, Profile, Profile Edit, Notifications, Chat, Reviews, and Invite Artist flow.
+Lazy loading (pagination) is implemented in listing screens (ArtistsScreen, EventsScreen, and HomeScreen) to load data incrementally.
+Media Handling:
+
+expo-image-picker for selecting images and videos.
+expo-video-thumbnails and custom media utilities for simulating video trimming (limiting videos to 40 seconds).
+Unified Search:
+
+A dedicated search component is used across the app. It returns artists, events, and category results in a consistent manner.
+2.2. Backend
+Although our current implementation uses dummy API functions, our envisioned backend architecture includes:
+
+Framework & Language:
+
+NestJS (TypeScript) with a Fastify adapter for high performance and scalability.
+Real-Time Communication:
+
+Centrifugo or a similar self-hosted WebSocket solution for real‑time chat and notifications.
+Infrastructure:
+
+Hosting: Railway (or another auto-scaling, cost-effective solution).
+Database: PlanetScale (MySQL) with auto‑sharding for scalability.
+Media Storage: Cloudflare R2 for secure and low-cost media storage.
+Authentication & Security:
+
+Authentication:
+OTP-based verification via Twilio.
+Social logins via Google and Apple OAuth.
+Security Measures:
+File type validation and Cloud DLP scanning for media uploads.
+Rate limiting on authentication and other endpoints to prevent abuse.
+GDPR-compliant user data management and explicit consent tracking.
+Caching & Logging:
+In-memory caching for improved performance.
+Robust logging for tracking user actions and auditing.
+API Design:
+
+RESTful endpoints with pagination, filtering, and search capabilities.
+Proper error handling and response codes.
+Future integration of advanced search (full-text search) and recommendation algorithms.
+3. What We Have Implemented
+3.1. Authentication & Profile
+AuthScreen:
+
+Phone number OTP verification (dummy OTP “123456”).
+Social login via Google/Apple using expo‑auth‑session (with type casting to bypass TS issues).
+Logout implemented using CommonActions.reset to clear navigation state.
+Profile Management:
+
+ProfileScreen: Displays the user’s profile (name, bio, profile picture, average rating, categories) along with their portfolio.
+ProfileEditScreen: Allows users to update profile details (profile picture, name, bio, categories).
+Portfolio Management:
+
+Editable portfolio grid with preview modal and modern delete icons.
+Supports images and videos (with simulated video trimming if over 40 seconds).
+3.2. Event Lifecycle & Management
+Event Creation:
+
+EventCreationScreen: Form requiring mandatory fields (title, location, budget, date, and time), along with media upload.
+Videos are trimmed to 40 seconds using a simulated UI for selecting the start time.
+Event Details:
+
+EventDetailsScreen: Displays event details (title, description, category, budget, location, date, time, host info) along with a media carousel.
+Conditional UI: The event host sees the list of applied artists, while non-hosts see an “Apply for Event” button.
+Event Media Management:
+
+EventMediaManagerScreen: Enables hosts to update or delete event media.
+3.3. Listings, Search, & Filtering
+HomeScreen:
+
+Displays a separate location header (with a location icon and current location text) and uses the unified search bar.
+Trending categories (horizontally scrollable) filter both trending artists and events.
+Implements lazy loading/pagination for both artists and events.
+ArtistsScreen & EventsScreen:
+
+ArtistsScreen uses a two‑column grid, and EventsScreen uses a single‑column layout (full‑width cards with a media carousel).
+Both screens have a unified search bar and FilterModal for refining results.
+Lazy loading is implemented to stop further loading if no more data is available.
+SearchScreen:
+
+Uses the unified search bar to perform searches across artists, events, and categories.
+Results clearly indicate the type of item (artist, event, category).
+3.4. Notifications & Chat
+NotificationsScreen:
+
+Fetches and displays notifications from the backend.
+Supports pull-to-refresh.
+ChatScreen & Messaging:
+
+Basic chat functionality is simulated with dummy APIs for retrieving chat lists and sending messages.
+Real-time updates can be integrated via a WebSocket manager in the future.
+3.5. Invite Artist Flow
+Invite Artist:
+On ArtistProfileScreen, a sticky “Invite this Artist to Your Event” button is shown for hosts.
+InviteArtistScreen: Lets hosts select from their created events (or create a new event) to send an invitation.
+4. Architectural & Security Considerations
+4.1. Application Architecture
+Frontend:
+
+Organized into folders for components, screens, API utilities, theming, and utilities.
+Navigation is managed by RootNavigator and BottomTabNavigator with stack and tab navigators.
+Backend (Planned):
+
+Built with NestJS (TypeScript) and Fastify for high-performance RESTful APIs.
+Real-time communication using Centrifugo or similar WebSocket-based solutions.
+Cloud-based infrastructure (Railway for hosting, PlanetScale for the database, and Cloudflare R2 for media storage).
+4.2. Security Measures
+Authentication:
+OTP-based authentication (via Twilio) and social login via OAuth.
+Explicit user consent during registration.
+Data & Media Security:
+File type validation and scanning (Cloud DLP) for all media uploads.
+Rate limiting on sensitive endpoints to mitigate brute-force attacks.
+GDPR-compliant data storage and explicit logging of user consent.
+API Security:
+Use of HTTPS for all API endpoints.
+Implementation of robust error handling, input validation, and logging.
+Real-Time & Notifications:
+Secure handling of push notifications and WebSocket connections.
+Use of token-based authentication for real-time channels.
+4.3. Deployment & Monitoring
+Deployment:
+Frontend built with Expo SDK 52 and deployed to both Android and iOS.
+Backend deployed on Railway with auto-scaling and cost-effective pricing.
+Monitoring:
+In-memory caching, database indexing, and logging for performance and audit trails.
+Real-time error tracking and analytics integrated with the backend.
+Conclusion
+GigFever is designed as a comprehensive platform for artists and event hosts with a unified profile, advanced event management, real-time communication, and a modern, responsive UI. The architecture is built for scalability, security, and performance. Our implementation includes complete frontend features with dummy API functions simulating real-world endpoints. In production, the backend will be built with NestJS and integrated with services for real-time updates, secure media storage, and robust user authentication.
+
+This document serves as both a blueprint for further development and a record of the features and technical decisions made during the project.
