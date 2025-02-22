@@ -42,7 +42,7 @@ export type RootStackParamList = {
   BookingInstructions: undefined;
   ManageCategories: undefined;
   Settings: undefined;
-  Search: undefined;
+  SearchScreen: undefined;
   EventCreation: undefined;
   EventMediaManager: { eventId: number };
   InviteArtist: { artistId: number };
@@ -82,7 +82,7 @@ export default function RootNavigator() {
           <Stack.Screen name="BookingInstructions" component={BookingInstructionsScreen} />
           <Stack.Screen name="ManageCategories" component={ManageCategoriesScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
-          <Stack.Screen name="Search" component={SearchScreen} />
+          <Stack.Screen name="SearchScreen" component={SearchScreen} />
           <Stack.Screen name="EventCreation" component={EventCreationScreen} />
           <Stack.Screen name="EventMediaManager" component={EventMediaManagerScreen} />
           <Stack.Screen name="InviteArtist" component={InviteArtistScreen} />

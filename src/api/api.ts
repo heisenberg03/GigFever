@@ -3,18 +3,18 @@ import { FiltersType } from '../components/FilterModal';
 
 // Dummy data for artists
 const dummyArtists = [
-  { id: 1, name: "Alice dravid munitr kadkam", averageRating: 4.5, primary_category: "Singer, cancer", min_budget: 100, profile_picture: "https://via.placeholder.com/150" },
-  { id: 2, name: "Bob", averageRating: 4.2, primary_category: "Dancer", min_budget: 120, profile_picture: "https://via.placeholder.com/150" },
-  { id: 3, name: "Charlie", averageRating: 4.8, primary_category: "Guitarist", min_budget: 150, profile_picture: "https://via.placeholder.com/150" },
-  { id: 4, name: "Diana", averageRating: 4.6, primary_category: "Pianist", min_budget: 130, profile_picture: "https://via.placeholder.com/150" },
-  { id: 5, name: "Evan", averageRating: 4.1, primary_category: "Drummer", min_budget: 110, profile_picture: "https://via.placeholder.com/150" },
-  { id: 6, name: "Fiona", averageRating: 4.9, primary_category: "Violinist", min_budget: 140, profile_picture: "https://via.placeholder.com/150" },
-  { id: 7, name: "Alice dravid munitr kadkam", averageRating: 4.5, primary_category: "Singer, cancer", min_budget: 100, profile_picture: "https://via.placeholder.com/150" },
-  { id: 8, name: "Bob", averageRating: 4.2, primary_category: "Dancer", min_budget: 120, profile_picture: "https://via.placeholder.com/150" },
-  { id: 9, name: "Charlie", averageRating: 4.8, primary_category: "Guitarist", min_budget: 150, profile_picture: "https://via.placeholder.com/150" },
-  { id: 10, name: "Diana", averageRating: 4.6, primary_category: "Pianist", min_budget: 130, profile_picture: "https://via.placeholder.com/150" },
-  { id: 11, name: "Evan", averageRating: 4.1, primary_category: "Drummer", min_budget: 110, profile_picture: "https://via.placeholder.com/150" },
-  { id: 12, name: "Fiona", averageRating: 4.9, primary_category: "Violinist", min_budget: 140, profile_picture: "https://via.placeholder.com/150" },
+  { id: 1, name: "Alice dravid munitr kadkam", averageRating: 4.5, primary_category: "Singer, cancer", budget: 100, profile_picture: "https://via.placeholder.com/150" },
+  { id: 2, name: "Bob", averageRating: 4.2, primary_category: "Dancer", budget: 120, profile_picture: "https://via.placeholder.com/150" },
+  { id: 3, name: "Charlie", averageRating: 4.8, primary_category: "Guitarist", budget: 150, profile_picture: "https://via.placeholder.com/150" },
+  { id: 4, name: "Diana", averageRating: 4.6, primary_category: "Pianist", budget: 130, profile_picture: "https://via.placeholder.com/150" },
+  { id: 5, name: "Evan", averageRating: 4.1, primary_category: "Drummer", budget: 110, profile_picture: "https://via.placeholder.com/150" },
+  { id: 6, name: "Fiona", averageRating: 4.9, primary_category: "Violinist", budget: 140, profile_picture: "https://via.placeholder.com/150" },
+  { id: 7, name: "Alice dravid munitr kadkam", averageRating: 4.5, primary_category: "Singer, cancer", budget: 100, profile_picture: "https://via.placeholder.com/150" },
+  { id: 8, name: "Bob", averageRating: 4.2, primary_category: "Dancer", budget: 120, profile_picture: "https://via.placeholder.com/150" },
+  { id: 9, name: "Charlie", averageRating: 4.8, primary_category: "Guitarist", budget: 150, profile_picture: "https://via.placeholder.com/150" },
+  { id: 10, name: "Diana", averageRating: 4.6, primary_category: "Pianist", budget: 130, profile_picture: "https://via.placeholder.com/150" },
+  { id: 11, name: "Evan", averageRating: 4.1, primary_category: "Drummer", budget: 110, profile_picture: "https://via.placeholder.com/150" },
+  { id: 12, name: "Fiona", averageRating: 4.9, primary_category: "Violinist", budget: 140, profile_picture: "https://via.placeholder.com/150" },
   // ... add more dummy artists if needed
 ];
 

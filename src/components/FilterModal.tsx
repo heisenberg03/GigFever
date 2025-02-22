@@ -105,7 +105,7 @@ export default function FilterModal({ visible, onClose, onApplyFilters }: Filter
   );
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',

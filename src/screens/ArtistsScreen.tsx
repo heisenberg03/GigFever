@@ -1,4 +1,3 @@
-// /screens/ArtistsScreen.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { Animated, FlatList, TouchableOpacity, RefreshControl, Text, StyleSheet, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,21 +7,26 @@ import UnifiedSearchBar from '../components/UnifiedSearchBar';
 import { getAllArtists, getUserLocation } from '../api/api';
 import ArtistCard from '../components/ArtistCard';
 import FilterModal, { FiltersType } from '../components/FilterModal';
+import SortModal from '../components/SortModal';
 
 export default function ArtistsScreen({ navigation, route }: any) {
   const theme = useTheme();
   const [artists, setArtists] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  // Use filters from route if available
   const [filters, setFilters] = useState<FiltersType>(
     route.params?.filterCategory ? { category: route.params.filterCategory } : {}
   );
   const [filterVisible, setFilterVisible] = useState(false);
+  const [sortVisible, setSortVisible] = useState(false);
+  const [sortCriteria, setSortCriteria] = useState<'averageRating' | 'popularity' | 'budget' | ''>('');
   const [location, setLocation] = useState('Loading...');
-  // Trending filters for global search; they work like quick category filters
+  // Trending categories now support multi-selection
   const trendingCategories = ["Music", "Exhibition", "Dance", "Comedy", "Theatre"];
-  const [selectedTrending, setSelectedTrending] = useState<string>('');
-
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    route.params?.filterCategory ? [route.params.filterCategory] : []
+  );
   // Header animation constants
   const LOCATION_HEIGHT = 50;
   const SEARCH_HEIGHT = 50;
@@ -36,11 +40,6 @@ export default function ArtistsScreen({ navigation, route }: any) {
     outputRange: [LOCATION_HEIGHT, 0],
     extrapolate: 'clamp',
   });
-  const filtersRowHeight = scrollY.interpolate({
-    inputRange: [0, SCROLL_DISTANCE],
-    outputRange: [FILTERS_ROW_HEIGHT, 0],
-    extrapolate: 'clamp',
-  });
 
   const fetchLocation = async () => {
     const loc = await getUserLocation();
@@ -49,8 +48,11 @@ export default function ArtistsScreen({ navigation, route }: any) {
 
   const fetchArtists = async () => {
     setRefreshing(true);
+    // Construct applied filters: if explicit filters exist, use them; otherwise, if trending selections exist, use those.
+    const appliedFilters: FiltersType =
+      Object.keys(filters).length > 0 ? filters : (selectedCategories.length > 0 ? { category: selectedCategories } : {});
     const data = await getAllArtists({
-      filters:  filters || [selectedTrending],
+      filters: appliedFilters,
       page: 1,
     });
     setArtists(data);
@@ -60,21 +62,34 @@ export default function ArtistsScreen({ navigation, route }: any) {
   useEffect(() => {
     fetchLocation();
     fetchArtists();
-  }, [filters, searchQuery, selectedTrending]);
+  }, [filters, searchQuery, selectedCategories]);
 
   const handleSearchSubmit = () => {
     fetchArtists();
   };
 
   const handleTrendingPress = (cat: string) => {
-    // Toggle trending filter: if already selected, deselect.
-    setSelectedTrending(prev => (prev === cat ? '' : cat));
+    setSelectedCategories(prev =>
+      prev.includes(cat) ? prev.filter(item => item !== cat) : [...prev, cat]
+    );
+  };
+  
+
+  const applySort = (criteria: 'averageRating' | 'popularity' | 'budget') => {
+    setSortCriteria(criteria);
+    const sorted = [...artists].sort((a, b) => {
+      if (criteria === 'averageRating') return b.rating - a.rating;
+      if (criteria === 'popularity') return b.popularity - a.popularity;
+      if (criteria === 'budget') return a.budget - b.budget;
+      return 0;
+    });
+    setArtists(sorted);
   };
 
   const renderArtist = ({ item }: any) => (
     <TouchableOpacity
       onPress={() => navigation.navigate('ArtistProfile', { artistId: item.id })}
-      style={{ flex: 1 }}
+      style={styles.artistTouchable}
     >
       <ArtistCard artist={item} />
     </TouchableOpacity>
@@ -101,9 +116,13 @@ export default function ArtistsScreen({ navigation, route }: any) {
         </View>
 
         <Animated.View style={[styles.trendingRow]}>
-          <TouchableOpacity onPress={() => setFilterVisible(true)} style={styles.filterButton}>
+          <TouchableOpacity onPress={() => setFilterVisible(true)} style={[styles.filterButton, {backgroundColor: theme.colors.card}]}>
             <Ionicons name="filter" size={30} color={theme.colors.text} />
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => setSortVisible(true)} style={[styles.filterButton, {backgroundColor: theme.colors.card}]}>
+            <Ionicons name="swap-vertical" size={30} color={theme.colors.text} />
+          </TouchableOpacity>
+        {/* Trending Filters Row */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
             {trendingCategories.map((cat, index) => (
               <TouchableOpacity
@@ -112,16 +131,18 @@ export default function ArtistsScreen({ navigation, route }: any) {
                 style={[
                   styles.trendingItem,
                   {
-                    backgroundColor: selectedTrending === cat ? theme.colors.primary : theme.colors.card,
+                    backgroundColor: selectedCategories.includes(cat)
+                      ? theme.colors.primary
+                      : theme.colors.card,
                   },
                 ]}
               >
-                <Text style={{ color: selectedTrending === cat ? '#fff' : theme.colors.text }}>{cat}</Text>
+                <Text style={{ color: selectedCategories.includes(cat) ? '#fff' : theme.colors.text }}>{cat}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
-        </Animated.View>
-      </Animated.View>
+          </Animated.View>
+          </Animated.View>
 
       {/* Main Content */}
       <Animated.ScrollView
@@ -149,6 +170,12 @@ export default function ArtistsScreen({ navigation, route }: any) {
         }}
         includeLocation={false}
       />
+      <SortModal
+        visible={sortVisible}
+        onClose={() => setSortVisible(false)}
+        onSelectSort={applySort}
+        currentSort={sortCriteria}
+      />
     </SafeAreaView>
   );
 }
@@ -172,7 +199,7 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     marginLeft: 8,
-    padding: 8,
+    paddingHorizontal:4
   },
   trendingRow: {
     flexDirection: 'row',
@@ -190,5 +217,8 @@ const styles = StyleSheet.create({
   },
   flatListContent: {
     paddingTop: 16,
+  },
+  artistTouchable: {
+    flex: 1,
   },
 });
