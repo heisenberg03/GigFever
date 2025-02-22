@@ -46,7 +46,7 @@ export default function HomeScreen({ navigation }: any) {
   const fetchData = async (categoryFilter = '') => {
     setRefreshing(true);
     const artists = await getTrendingArtists({ category: categoryFilter });
-    const events = await getTrendingEvents({ category: categoryFilter });
+    const events = await getTrendingEvents({ category:categoryFilter });
     const userLoc = await getUserLocation();
     setTrendingArtists(artists);
     setTrendingEvents(events);
@@ -154,7 +154,7 @@ export default function HomeScreen({ navigation }: any) {
         {/* Upcoming Events */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, marginBottom: 16, marginTop: 48 }}>
           <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: 'bold' }}>Upcoming Events</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('EventsScreen')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Events')}>
             <Text style={{ color: theme.colors.primary, fontSize: 16 }}>View All Events</Text>
           </TouchableOpacity>
         </View>

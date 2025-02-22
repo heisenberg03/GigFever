@@ -7,32 +7,35 @@ import UnifiedSearchBar from '../components/UnifiedSearchBar';
 import { getAllArtists, getUserLocation } from '../api/api';
 import ArtistCard from '../components/ArtistCard';
 import FilterModal, { FiltersType } from '../components/FilterModal';
-import SortModal from '../components/SortModal';
+import SortModal, { SortOption, SelectedSort } from '../components/SortModal';
 
 export default function ArtistsScreen({ navigation, route }: any) {
   const theme = useTheme();
   const [artists, setArtists] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  // Use filters from route if available
-  const [filters, setFilters] = useState<FiltersType>(
-    route.params?.filterCategory ? { category: route.params.filterCategory } : {}
-  );
-  const [filterVisible, setFilterVisible] = useState(false);
-  const [sortVisible, setSortVisible] = useState(false);
-  const [sortCriteria, setSortCriteria] = useState<'averageRating' | 'popularity' | 'budget' | ''>('');
-  const [location, setLocation] = useState('Loading...');
-  // Trending categories now support multi-selection
-  const trendingCategories = ["Music", "Exhibition", "Dance", "Comedy", "Theatre"];
+  // Unified selected categories state
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     route.params?.filterCategory ? [route.params.filterCategory] : []
   );
-  // Header animation constants
-  const LOCATION_HEIGHT = 50;
-  const SEARCH_HEIGHT = 50;
-  const FILTERS_ROW_HEIGHT = 60;
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [sortVisible, setSortVisible] = useState(false);
+  const [selectedSort, setSelectedSort] = useState<SelectedSort>({ field: '', order: 'asc' });
+  const [location, setLocation] = useState('Loading...');
+
+  const trendingCategories = ["Music", "Exhibition", "Dance", "Comedy", "Theatre"];
+  const sortOptions: SortOption[] = [
+    { label: 'Rating', value: 'rating' },
+    { label: 'Popularity', value: 'popularity' },
+    { label: 'Budget', value: 'budget' },
+  ];
+
+  // Header animation constants from original design
+  const LOCATION_HEIGHT = 40;
+  const SEARCH_HEIGHT = 70;
+  const FILTERS_ROW_HEIGHT = 30;
   const HEADER_HEIGHT = LOCATION_HEIGHT + SEARCH_HEIGHT + FILTERS_ROW_HEIGHT;
-  const SCROLL_DISTANCE = LOCATION_HEIGHT + FILTERS_ROW_HEIGHT; // location + trending filters collapse
+  const SCROLL_DISTANCE = LOCATION_HEIGHT + FILTERS_ROW_HEIGHT;
 
   const scrollY = useRef(new Animated.Value(0)).current;
   const locationHeight = scrollY.interpolate({
@@ -48,21 +51,27 @@ export default function ArtistsScreen({ navigation, route }: any) {
 
   const fetchArtists = async () => {
     setRefreshing(true);
-    // Construct applied filters: if explicit filters exist, use them; otherwise, if trending selections exist, use those.
     const appliedFilters: FiltersType =
-      Object.keys(filters).length > 0 ? filters : (selectedCategories.length > 0 ? { category: selectedCategories } : {});
-    const data = await getAllArtists({
-      filters: appliedFilters,
-      page: 1,
-    });
-    setArtists(data);
+      selectedCategories.length > 0 ? { category: selectedCategories } : {};
+    const data = await getAllArtists({ filters: appliedFilters, page: 1 });
+    let sortedData = data;
+    if (selectedSort.field) {
+      sortedData = [...data].sort((a, b) => {
+        if (selectedSort.order === 'asc') {
+          return a[selectedSort.field] - b[selectedSort.field];
+        } else {
+          return b[selectedSort.field] - a[selectedSort.field];
+        }
+      });
+    }
+    setArtists(sortedData);
     setRefreshing(false);
   };
 
   useEffect(() => {
     fetchLocation();
     fetchArtists();
-  }, [filters, searchQuery, selectedCategories]);
+  }, [selectedCategories, searchQuery, selectedSort]);
 
   const handleSearchSubmit = () => {
     fetchArtists();
@@ -73,24 +82,9 @@ export default function ArtistsScreen({ navigation, route }: any) {
       prev.includes(cat) ? prev.filter(item => item !== cat) : [...prev, cat]
     );
   };
-  
-
-  const applySort = (criteria: 'averageRating' | 'popularity' | 'budget') => {
-    setSortCriteria(criteria);
-    const sorted = [...artists].sort((a, b) => {
-      if (criteria === 'averageRating') return b.rating - a.rating;
-      if (criteria === 'popularity') return b.popularity - a.popularity;
-      if (criteria === 'budget') return a.budget - b.budget;
-      return 0;
-    });
-    setArtists(sorted);
-  };
 
   const renderArtist = ({ item }: any) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('ArtistProfile', { artistId: item.id })}
-      style={styles.artistTouchable}
-    >
+    <TouchableOpacity onPress={() => navigation.navigate('ArtistProfile', { artistId: item.id })} style={styles.artistTouchable}>
       <ArtistCard artist={item} />
     </TouchableOpacity>
   );
@@ -99,14 +93,12 @@ export default function ArtistsScreen({ navigation, route }: any) {
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       {/* Animated Header */}
       <Animated.View style={[styles.headerContainer, { height: HEADER_HEIGHT, backgroundColor: theme.colors.background }]}>
-        {/* Location Row */}
         <Animated.View style={[styles.locationRow, { height: locationHeight }]}>
           <TouchableOpacity onPress={() => navigation.navigate('LocationSelection')} style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="location-sharp" size={24} color={theme.colors.text} />
             <Text style={{ marginLeft: 8, color: theme.colors.text, fontSize: 16 }}>{location}</Text>
           </TouchableOpacity>
         </Animated.View>
-        {/* Search Row */}
         <View style={styles.searchRow}>
           <UnifiedSearchBar
             searchQuery={searchQuery}
@@ -114,37 +106,29 @@ export default function ArtistsScreen({ navigation, route }: any) {
             onSubmit={handleSearchSubmit}
           />
         </View>
-
-        <Animated.View style={[styles.trendingRow]}>
-          <TouchableOpacity onPress={() => setFilterVisible(true)} style={[styles.filterButton, {backgroundColor: theme.colors.card}]}>
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity onPress={() => setFilterVisible(true)} style={styles.actionButton}>
             <Ionicons name="filter" size={30} color={theme.colors.text} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setSortVisible(true)} style={[styles.filterButton, {backgroundColor: theme.colors.card}]}>
+          <TouchableOpacity onPress={() => setSortVisible(true)} style={styles.actionButton}>
             <Ionicons name="swap-vertical" size={30} color={theme.colors.text} />
           </TouchableOpacity>
-        {/* Trending Filters Row */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
-            {trendingCategories.map((cat, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleTrendingPress(cat)}
-                style={[
+          <View style={styles.trendingRow}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+              {trendingCategories.map((cat, index) => (
+                <TouchableOpacity key={index} onPress={() => handleTrendingPress(cat)} style={[
                   styles.trendingItem,
-                  {
-                    backgroundColor: selectedCategories.includes(cat)
-                      ? theme.colors.primary
-                      : theme.colors.card,
-                  },
-                ]}
-              >
-                <Text style={{ color: selectedCategories.includes(cat) ? '#fff' : theme.colors.text }}>{cat}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-          </Animated.View>
-          </Animated.View>
+                  { backgroundColor: selectedCategories.includes(cat) ? theme.colors.primary : theme.colors.card }
+                ]}>
+                  <Text style={{ color: selectedCategories.includes(cat) ? '#fff' : theme.colors.text }}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
 
-      {/* Main Content */}
+      </Animated.View>
+
       <Animated.ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
@@ -164,61 +148,29 @@ export default function ArtistsScreen({ navigation, route }: any) {
       <FilterModal
         visible={filterVisible}
         onClose={() => setFilterVisible(false)}
-        onApplyFilters={(appliedFilters) => {
-          setFilters(appliedFilters);
-          setFilterVisible(false);
-        }}
-        includeLocation={false}
+        onApplyFilters={(updatedCategories) => setSelectedCategories(updatedCategories)}
+        selectedCategories={selectedCategories}
       />
       <SortModal
         visible={sortVisible}
         onClose={() => setSortVisible(false)}
-        onSelectSort={applySort}
-        currentSort={sortCriteria}
+        onApplySort={(newSort) => setSelectedSort(newSort)}
+        currentSort={selectedSort}
+        sortOptions={sortOptions}
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    zIndex: 999,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 4,
-  },
-  filterButton: {
-    marginLeft: 8,
-    paddingHorizontal:4
-  },
-  trendingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 8,
-  },
-  trendingItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginRight: 8,
-  },
-  scrollContent: {
-    paddingBottom: 30,
-  },
-  flatListContent: {
-    paddingTop: 16,
-  },
-  artistTouchable: {
-    flex: 1,
-  },
+  headerContainer: { zIndex: 999 },
+  locationRow: { flexDirection: 'row', paddingHorizontal: 16, justifyContent: 'flex-start', alignItems: 'center', overflow: 'hidden' },
+  searchRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 4 },
+  actionButtonsRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
+  actionButton: { padding: 8 },
+  trendingRow: { flexDirection: 'row', alignItems: 'center', paddingTop: 8 },
+  trendingItem: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8, marginRight: 8 },
+  scrollContent: { paddingBottom: 30 },
+  flatListContent: { paddingTop: 16 },
+  artistTouchable: { flex: 1 },
 });

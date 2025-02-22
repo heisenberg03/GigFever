@@ -1,154 +1,146 @@
-// /components/FilterModal.tsx
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../theme/ThemeProvider';
-import { allCategories } from '../screens/HomeScreen';
-
-
+import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { ThemeContext, useTheme } from '../theme/ThemeProvider';
 export interface FiltersType {
-  minBudget?: string;
-  category?: string[];
+  // For now, filtering by category (string or array)
+  category?: string | string[];
 }
 
 interface FilterModalProps {
   visible: boolean;
   onClose: () => void;
-  onApplyFilters: (filters: FiltersType) => void;
-  includeLocation?: boolean;
+  onApplyFilters: (selectedCategories: string[]) => void;
+  selectedCategories: string[];
+  availableCategories?: string[];
 }
 
-export default function FilterModal({ visible, onClose, onApplyFilters }: FilterModalProps) {
+const defaultCategories = ["Music", "Exhibition", "Dance", "Comedy", "Theatre"];
+
+const FilterModal: React.FC<FilterModalProps> = ({
+  visible,
+  onClose,
+  onApplyFilters,
+  selectedCategories,
+  availableCategories = defaultCategories,
+}) => {
+  const [localSelected, setLocalSelected] = useState<string[]>(selectedCategories);
   const theme = useTheme();
-  const [minBudget, setMinBudget] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [categorySearch, setCategorySearch] = useState('');
-  const [filteredCategories, setFilteredCategories] = useState(allCategories);
-
-  // Filter the categories list based on search input
   useEffect(() => {
-    if (categorySearch === '') {
-      setFilteredCategories(allCategories);
-    } else {
-      const filtered = allCategories.filter(cat =>
-        cat.toLowerCase().includes(categorySearch.toLowerCase())
-      );
-      setFilteredCategories(filtered);
+    if (visible) {
+      setLocalSelected(selectedCategories);
     }
-  }, [categorySearch]);
+  }, [selectedCategories, visible]);
 
-  const toggleCategory = (category: string) => {
-    if (selectedCategories.includes(category)) {
-      setSelectedCategories(selectedCategories.filter(cat => cat !== category));
-    } else {
-      setSelectedCategories([...selectedCategories, category]);
-    }
+  const toggleCategory = (cat: string) => {
+    setLocalSelected(prev =>
+      prev.includes(cat) ? prev.filter(item => item !== cat) : [...prev, cat]
+    );
   };
 
   const handleApply = () => {
-    onApplyFilters({ minBudget, category: selectedCategories });
+    onApplyFilters(localSelected);
+    onClose();
   };
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-        <View style={[styles.modalContent, { backgroundColor: theme.colors.background }]}>
-          <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Filter Artists</Text>
-
-          <Text style={[styles.label, { color: theme.colors.text }]}>Minimum Budget</Text>
-          <TextInput
-            value={minBudget}
-            onChangeText={setMinBudget}
-            placeholder="Enter minimum budget"
-            placeholderTextColor="#ccc"
-            style={[styles.textInput, { borderColor: theme.colors.border, color: theme.colors.text }]}
-            keyboardType="numeric"
-          />
-
-          <Text style={[styles.label, { color: theme.colors.text, marginTop: 16 }]}>Categories</Text>
-          <TextInput
-            value={categorySearch}
-            onChangeText={setCategorySearch}
-            placeholder="Search categories..."
-            placeholderTextColor="#ccc"
-            style={[styles.textInput, { borderColor: theme.colors.border, color: theme.colors.text }]}
-          />
-
-          <FlatList
-            data={filteredCategories}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
+      <View style={styles.modalContainer}>
+        <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>Filter Categories</Text>
+          <ScrollView contentContainerStyle={styles.categoriesContainer}>
+            {availableCategories.map((cat, index) => (
               <TouchableOpacity
-                onPress={() => toggleCategory(item)}
-                style={styles.categoryItem}
+                key={index}
+                style={[
+                  styles.categoryButton,  {backgroundColor:theme.colors.background},
+                  localSelected.includes(cat) && { backgroundColor: theme.colors.primary },
+                ]}
+                onPress={() => toggleCategory(cat)}
               >
-                <Text style={{ color: theme.colors.text }}>{item}</Text>
-                {selectedCategories.includes(item) && (
-                  <Ionicons name="checkmark-circle" size={20} color={theme.colors.primary} />
-                )}
+                <Text
+                  style={[
+                    styles.categoryText,{color:theme.colors.text},
+                    localSelected.includes(cat) && styles.selectedCategoryText,
+                  ]}
+                >
+                  {cat}
+                </Text>
               </TouchableOpacity>
-            )}
-            style={{ maxHeight: 150, marginTop: 8 }}
-          />
-
+            ))}
+          </ScrollView>
           <View style={styles.buttonRow}>
-            <TouchableOpacity onPress={onClose} style={[styles.button, { backgroundColor: theme.colors.border }]}>
-              <Text style={{ color: theme.colors.text }}>Cancel</Text>
+            <TouchableOpacity style={[styles.cancelButton,{backgroundColor:theme.colors.border}]} onPress={onClose}>
+              <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleApply} style={[styles.button, { backgroundColor: theme.colors.primary }]}>
-              <Text style={{ color: '#fff' }}>Apply</Text>
+            <TouchableOpacity style={[styles.applyButton, {backgroundColor:theme.colors.primary}]} onPress={handleApply}>
+              <Text style={styles.buttonText}>Apply Filters</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
     </Modal>
   );
-}
+};
 
-export const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+const styles = StyleSheet.create({
+  modalContainer: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    backgroundColor: 'rgba(0,0,0,0.5)' 
   },
-  modalContent: {
-    width: '90%',
-    borderRadius: 8,
-    padding: 16,
+  modalContent: { 
+    margin: 20, 
+    backgroundColor: '#fff', 
+    borderRadius: 10, 
+    padding: 20, 
+    maxHeight: '80%' 
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
+  title: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    marginBottom: 10 
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
+  categoriesContainer: { 
+    paddingVertical: 10 
   },
-  textInput: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 8,
-    marginBottom: 8,
+  categoryButton: { 
+    paddingVertical: 10, 
+    paddingHorizontal: 15, 
+    borderRadius: 5, 
+    marginBottom: 10 
   },
-  categoryItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+  categoryText: { 
+    fontSize: 16, 
+    textAlign: 'center' 
   },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 16,
+  selectedCategoryText: { 
+    color: '#fff', 
+    fontWeight: 'bold' 
   },
-  button: {
-    padding: 12,
-    borderRadius: 8,
-    width: '40%',
-    alignItems: 'center',
+  buttonRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    marginTop: 20 
+  },
+  cancelButton: { 
+    flex: 1, 
+    marginRight: 10, 
+    padding: 15, 
+    borderRadius: 5, 
+    alignItems: 'center' 
+  },
+  applyButton: { 
+    flex: 1, 
+    marginLeft: 10, 
+    padding: 15, 
+    borderRadius: 5, 
+    alignItems: 'center' 
+  },
+  buttonText: { 
+    color: '#fff', 
+    fontSize: 16, 
+    fontWeight: 'bold' 
   },
 });
+
+export default FilterModal;

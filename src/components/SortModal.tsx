@@ -1,106 +1,152 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/ThemeProvider';
+export type SortOption = {
+  label: string;
+  value: string;
+};
+
+export type SelectedSort = {
+  field: string;
+  order: 'asc' | 'desc';
+};
 
 interface SortModalProps {
-    visible: boolean;
-    onClose: () => void;
-    onSelectSort: (criteria: 'averageRating' | 'popularity' | 'budget') => void;
-    currentSort: 'averageRating' | 'popularity' | 'budget' | '';
+  visible: boolean;
+  onClose: () => void;
+  onApplySort: (selectedSort: SelectedSort) => void;
+  currentSort: SelectedSort;
+  sortOptions: SortOption[];
 }
 
-const sortOptions: Array<{ label: string; value: 'averageRating' | 'popularity' | 'budget' }> = [
-    { label: 'Rating', value: 'averageRating' },
-    { label: 'Popularity', value: 'popularity' },
-    { label: 'Budget', value: 'budget' },
-];
+const SortModal: React.FC<SortModalProps> = ({
+  visible,
+  onClose,
+  onApplySort,
+  currentSort,
+  sortOptions,
+}) => {
+  const [localSort, setLocalSort] = useState<SelectedSort>(currentSort);
+  const theme = useTheme();
 
-const SortModal: React.FC<SortModalProps> = ({ visible, onClose, onSelectSort, currentSort }) => {
-    const [selectedSort, setSelectedSort] = useState<'averageRating' | 'popularity' | 'budget' | ''>(currentSort);
-    const theme = useTheme();
+  useEffect(() => {
+    if (visible) {
+      setLocalSort(currentSort);
+    }
+  }, [currentSort, visible]);
 
-    useEffect(() => {
-        if (visible) {
-            setSelectedSort(currentSort);
-            onClose();
-        }
-    }, [currentSort]);
+  const handleOptionPress = (option: SortOption) => {
+    if (localSort.field === option.value) {
+      // Toggle order
+      setLocalSort({
+        field: option.value,
+        order: localSort.order === 'asc' ? 'desc' : 'asc',
+      });
+    } else {
+      setLocalSort({ field: option.value, order: 'asc' });
+    }
+  };
 
-    return (
-        <Modal visible={visible} animationType="slide" transparent>
-            <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-                <View style={[styles.modalContent, { backgroundColor: theme.colors.background }]}>
-                    <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Sort Artists</Text>
+  const handleApply = () => {
+    onApplySort(localSort);
+    onClose();
+  };
 
-                    {sortOptions.map((option) => (
-                        <TouchableOpacity
-                            key={option.value}
-                            style={[styles.optionButton, selectedSort === option.value && { backgroundColor: theme.colors.primary }]}
-                            onPress={() => onSelectSort(option.value)}
-                        >
-                            <Text style={[styles.optionText, selectedSort === option.value && { color: '#fff' }]}>
-                                {option.label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                    <View style={styles.buttonRow}>
-
-                        <TouchableOpacity onPress={onClose} style={[styles.button, { backgroundColor: theme.colors.border }]}>
-                            <Text style={{ color: theme.colors.text }}>Close</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-            </View>
-        </Modal>
-    );
+  return (
+    <Modal visible={visible} animationType="slide" transparent>
+      <View style={styles.modalContainer}>
+        <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>Sort Options</Text>
+          {sortOptions.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.optionButton, {backgroundColor:theme.colors.background},
+                localSort.field === option.value && { backgroundColor: theme.colors.primary } ,
+              ]}
+              onPress={() => handleOptionPress(option)}
+            >
+              <Text
+                style={[
+                  styles.optionText,{color:theme.colors.text},
+                  localSort.field === option.value && styles.selectedText,
+                ]}
+              >
+                {option.label} {localSort.field === option.value ? (localSort.order === 'asc' ? '↑' : '↓') : ''}
+              </Text>
+            </TouchableOpacity>
+          ))}
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={[styles.cancelButton,{backgroundColor:theme.colors.border}]} onPress={onClose}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.applyButton,{backgroundColor:theme.colors.primary}]} onPress={handleApply}>
+              <Text style={styles.buttonText}>Apply Sort</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 };
 
 const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContent: {
-        width: '90%',
-        borderRadius: 8,
-        padding: 16,
-    },
-    modalTitle: {
-        padding: 10,
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 16,
-        marginLeft: 10,
-        textAlign: 'center',
-    },
-    optionButton: {
-        padding: 10,
-        marginVertical: 5,
-        backgroundColor: '#eee',
-        borderRadius: 5,
-    },
-    optionText: {
-        fontSize: 16,
-        color: '#333',
-        textAlign: 'center',
-    },
-    selectedText: {
-        fontWeight: 'bold',
-    },
-    buttonRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: 16,
-    },
-    button: {
-        padding: 12,
-        marginBottom: 16,
-        borderRadius: 8,
-        width: '20%',
-        alignItems: 'center',
-    },
+  modalContainer: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    backgroundColor: 'rgba(0,0,0,0.5)' 
+  },
+  modalContent: { 
+    margin: 20, 
+    borderRadius: 10, 
+    padding: 20, 
+    maxHeight: '80%' 
+  },
+  title: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    marginBottom: 10 
+  },
+  optionButton: { 
+    padding: 10, 
+    marginVertical: 5, 
+    borderRadius: 5 
+  },
+  selectedOption: { 
+    backgroundColor: '#4caf50' 
+  },
+  optionText: { 
+    fontSize: 16, 
+    textAlign: 'center' 
+  },
+  selectedText: { 
+    color: '#fff', 
+    fontWeight: 'bold' 
+  },
+  buttonRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    marginTop: 20 
+  },
+  cancelButton: { 
+    flex: 1, 
+    marginRight: 10, 
+    padding: 15, 
+    borderRadius: 5, 
+    alignItems: 'center' 
+  },
+  applyButton: { 
+    flex: 1, 
+    marginLeft: 10, 
+    padding: 15, 
+    borderRadius: 5, 
+    alignItems: 'center' 
+  },
+  buttonText: { 
+    color: '#fff', 
+    fontSize: 16, 
+    fontWeight: 'bold' 
+  },
 });
 
 export default SortModal;

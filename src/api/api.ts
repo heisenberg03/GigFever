@@ -19,48 +19,45 @@ const dummyArtists = [
 ];
 
 // Dummy data for events
+// /api/api.ts
+
+// Dummy events data for simulation
 const dummyEvents = [
-  { 
-    id: 1, 
-    title: "Jazz Night Enjoy an evening of smooth jazz", 
-    description: "Enjoy an evening of smooth jazz.", 
-    category: "Music", 
-    budget: 500, 
-    location: "Downtown Enjoy an evening of smooth jazz Enjoy an evening of smooth jazz", 
-    image: "https://via.placeholder.com/300", 
-    date: "2023-12-01", 
-    time: "19:00", 
-    host: { id: 1, name: "Host1", averageRating: 4.0, profile_picture: "https://via.placeholder.com/150" },
-    media: ["https://via.placeholder.com/300/1", "https://via.placeholder.com/300/2"]
-  },
-  { 
-    id: 2, 
-    title: "Art Expo", 
-    description: "Explore modern art.", 
-    category: "Exhibition", 
-    budget: 300, 
-    location: "City Hall", 
-    image: "https://via.placeholder.com/300", 
-    date: "2023-12-05", 
-    time: "20:00", 
-    host: { id: 2, name: "Host2", averageRating: 4.3, profile_picture: "https://via.placeholder.com/150" },
-    media: ["https://via.placeholder.com/300/3"]
-  },
-  { 
-    id: 3, 
-    title: "Rock Concert", 
-    description: "Rock out with the best bands.", 
-    category: "Music", 
-    budget: 600, 
-    location: "Arena", 
-    image: "https://via.placeholder.com/300", 
-    date: "2023-12-10", 
-    time: "21:00", 
-    host: { id: 1, name: "Host1", averageRating: 4.0, profile_picture: "https://via.placeholder.com/150" },
-    media: ["https://via.placeholder.com/300/4", "https://via.placeholder.com/300/5"]
-  },
-  // ... add more dummy events if needed
+  { id: 1, title: 'Concert A', category: 'Concert', date: 1640995200, popularity: 80, budget: 500 },
+  { id: 2, title: 'Workshop B', category: 'Workshop', date: 1641081600, popularity: 60, budget: 300 },
+  { id: 3, title: 'Conference C', category: 'Conference', date: 1641168000, popularity: 90, budget: 700 },
+  { id: 4, title: 'Exhibition D', category: 'Exhibition', date: 1641254400, popularity: 50, budget: 200 },
+  // ...more dummy events
 ];
+
+
+interface GetAllEventsParams {
+  filters?: FiltersType;
+  page: number;
+}
+
+export const getAllEvents = async (params: { filters?:FiltersType ; page?: number } = {}): Promise<any[]> => {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  const {filters, page = 1} = params;
+  let events = dummyEvents;
+
+  // Apply category filters if provided
+  if (filters && filters.category) {
+    if (Array.isArray(filters.category)) {
+      events = events.filter(event => filters.category?.includes(event.category));
+    } else {
+      events = events.filter(event => event.category === filters.category);
+    }
+  }
+
+  // Implement simple pagination (page size = 10)
+  const pageSize = 10;
+  const start = (page - 1) * pageSize;
+  const end = start + pageSize;
+  return events.slice(start, end);
+};
+
 
 const PAGE_SIZE = 6;
 
@@ -106,36 +103,8 @@ export const getTrendingArtists = async (params: { category?: string; page?: num
   return getAllArtists(params);
 };
 
-// Events APIs
-export const getAllEvents = async (page: number = 1, params: { category?: string; location?: string; minBudget?: number; maxBudget?: number } = {}): Promise<any[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let events = dummyEvents;
-      if (params.category) {
-        events = events.filter(event =>
-          event.category.toLowerCase().includes(params.category?.toLowerCase() || '')
-        );
-      }
-      if (params.location) {
-        events = events.filter(event =>
-          event.location.toLowerCase().includes(params.location?.toLowerCase() || '')
-        );
-      }
-      if (params.minBudget !== undefined) {
-        events = events.filter(event => event.budget >= (params.minBudget as number));
-      }
-      if (params.maxBudget !== undefined) {
-        events = events.filter(event => event.budget <= (params.maxBudget as number));
-      }
-      const startIndex = (page - 1) * PAGE_SIZE;
-      const paginatedEvents = events.slice(startIndex, startIndex + PAGE_SIZE);
-      resolve(paginatedEvents);
-    }, 500);
-  });
-};
-
-export const getTrendingEvents = async (params: { category?: string; page?: number } = {}): Promise<any[]> => {
-  return getAllEvents(params.page || 1, params);
+export const getTrendingEvents = async  (params: { category?: string; page?: number }={}): Promise<any[]> => {
+  return getAllEvents(params);
 };
 
 // Search API: returns artists, events, and categories
