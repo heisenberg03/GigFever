@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Alert, Modal, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { deletePortfolioItem } from '../api/api';
 import { useTheme } from '../theme/ThemeProvider';
 import { trimMediaAsync } from '../utils/mediaUtils';
 import { Ionicons } from '@expo/vector-icons';
@@ -57,7 +56,6 @@ export default function PortfolioManager({ portfolio, refreshPortfolio }: Portfo
   };
 
   const handleDelete = async (itemId: number) => {
-    await deletePortfolioItem(itemId);
     Alert.alert('Deleted', 'Portfolio item deleted.');
     refreshPortfolio();
   };

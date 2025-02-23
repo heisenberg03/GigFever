@@ -4,7 +4,6 @@ import AuthScreen from '../screens/AuthScreen';
 import BottomTabNavigator from './BottomTabNavigator';
 import ArtistProfileScreen from '../screens/ArtistProfileScreen';
 import EventDetailsScreen from '../screens/EventDetailsScreen';
-import ChatScreen from '../screens/ChatConversationScreen';
 import MyEventsScreen from '../screens/MyEventsScreen';
 import MyBookingsScreen from '../screens/MyBookingsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
@@ -67,6 +66,7 @@ export default function RootNavigator() {
       ) : (
         <>
           <Stack.Screen name="Main" component={BottomTabNavigator} />
+          <Stack.Screen name="Auth" component={AuthScreen} />
           <Stack.Screen name="Artists" component={ArtistsScreen} />
           <Stack.Screen name="Events" component={EventsScreen} />
           <Stack.Screen name="ArtistProfile" component={ArtistProfileScreen} />
