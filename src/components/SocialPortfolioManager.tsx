@@ -18,6 +18,7 @@ export type SocialPost = {
   id: string;
   platform: 'facebook' | 'instagram' | 'youtube' | 'twitter';
   thumbnail: string;
+  media_type: string;
   title: string;
   url: string;
 };
