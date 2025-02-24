@@ -12,7 +12,6 @@ import ManageEventApplicationsScreen from '../screens/ManageEventApplicationsScr
 import LocationSelectionScreen from '../screens/LocationSelectionScreen';
 import ApplyForEventScreen from '../screens/ApplyForEventScreen';
 import BookingInstructionsScreen from '../screens/BookingInstructionsScreen';
-import ManageCategoriesScreen from '../screens/ManageCategoriesScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import SearchScreen from '../screens/SearchScreen';
 import EventCreationScreen from '../screens/EventCreationScreen';
@@ -22,6 +21,8 @@ import ProfileEditScreen from '../screens/ProfileEditScreen';
 import ArtistsScreen from '../screens/ArtistsScreen';
 import EventsScreen from '../screens/EventsScreen';
 import ChatConversationScreen from '../screens/ChatConversationScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import EditPortfolioScreen from '../screens/EditPortfolioScreen';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -29,6 +30,8 @@ export type RootStackParamList = {
   Artists: undefined;
   Events: undefined;
   ArtistProfile: { artistId: number };
+  EditProfile: undefined;
+  EditPortfolio: undefined;
   EventDetails: { eventId: number };
   ChatConversation: { chatId: number; userName: string, profile_picture: string };
   MyEvents: undefined;
@@ -70,6 +73,8 @@ export default function RootNavigator() {
           <Stack.Screen name="Artists" component={ArtistsScreen} />
           <Stack.Screen name="Events" component={EventsScreen} />
           <Stack.Screen name="ArtistProfile" component={ArtistProfileScreen} />
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+          <Stack.Screen name="EditPortfolio" component={EditPortfolioScreen} />
           <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
           <Stack.Screen name="ChatConversation" component={ChatConversationScreen} />
           <Stack.Screen name="MyEvents" component={MyEventsScreen} />
@@ -80,7 +85,6 @@ export default function RootNavigator() {
           <Stack.Screen name="LocationSelection" component={LocationSelectionScreen} />
           <Stack.Screen name="ApplyForEvent" component={ApplyForEventScreen} />
           <Stack.Screen name="BookingInstructions" component={BookingInstructionsScreen} />
-          <Stack.Screen name="ManageCategories" component={ManageCategoriesScreen} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
           <Stack.Screen name="SearchScreen" component={SearchScreen} />
           <Stack.Screen name="EventCreation" component={EventCreationScreen} />

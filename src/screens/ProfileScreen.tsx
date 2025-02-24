@@ -1,149 +1,202 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, Image, ScrollView, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import { useTheme } from '../theme/ThemeProvider';
-import { getUserProfile, getArtistProfile } from '../api/api';
-import PortfolioManager from '../components/PortfolioManager';
+import {
+  SafeAreaView,
+  ScrollView,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  Alert,
+  Linking,
+} from 'react-native';
+import Video from 'react-native-video';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../theme/ThemeProvider';
+import { fetchProfile } from '../api/api';
 
-export default function ProfileScreen({ navigation }: any) {
+const ProfileScreen: React.FC<any> = ({ navigation }) => {
   const theme = useTheme();
   const [profile, setProfile] = useState<any>(null);
-  const [portfolio, setPortfolio] = useState<any[]>([]);
-
-  const fetchProfile = async () => {
-    const data = await getUserProfile();
-    setProfile(data);
-  };
-
-  const fetchPortfolio = async () => {
-    const data = await getArtistProfile(1); // current user's artist ID is 1
-    setPortfolio(data.portfolio);
-  };
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewItem, setPreviewItem] = useState<any>(null);
 
   useEffect(() => {
-    fetchProfile();
-    fetchPortfolio();
+    const loadProfile = async () => {
+      const data = await fetchProfile();
+      setProfile(data);
+    };
+    loadProfile();
   }, []);
-
-  const renderPortfolioItem = ({ item }: any) => (
-    <TouchableOpacity style={styles.portfolioItem}>
-      <Image source={{ uri: item.media_url }} style={styles.portfolioImage} />
-    </TouchableOpacity>
-  );
 
   if (!profile) {
     return (
       <SafeAreaView style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
-        <Text style={{ color: theme.colors.text }}>Loading...</Text>
+        <Text style={{ color: theme.colors.text }}>Loading profile...</Text>
       </SafeAreaView>
     );
   }
 
+  const handleSocialPress = (platform: string, account: { linked: boolean; url: string }) => {
+    if (account.linked) {
+      Linking.openURL(account.url).catch(() =>
+        Alert.alert('Error', 'Failed to open URL')
+      );
+    } else {
+      navigation.navigate('SocialAuth', { platform });
+    }
+  };
+
+  const openPreview = (item: any) => {
+    setPreviewItem(item);
+    setPreviewVisible(true);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header Card */}
-        <View style={[styles.headerCard, { borderColor: theme.colors.card }]}>
-          <Image source={{ uri: profile.profile_picture }} style={styles.profilePic} />
-          <View style={styles.headerTextContainer}>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
+        {/* Profile Header */}
+        <View style={styles.headerContainer}>
+          <Image source={{ uri: profile.profilePicture }} style={styles.profilePic} />
+          <View style={styles.headerText}>
             <Text style={[styles.name, { color: theme.colors.text }]}>{profile.name}</Text>
             <Text style={[styles.rating, { color: theme.colors.text }]}>
-              Average Rating: {profile.averageRating ? profile.averageRating.toFixed(1) : 'N/A'}
+              Rating: {profile.averageRating.toFixed(1)}
             </Text>
           </View>
+          <TouchableOpacity style={styles.editButton} onPress={() => navigation.navigate('EditProfile')}>
+            <Ionicons name="pencil" size={24} color={theme.colors.primary} />
+          </TouchableOpacity>
         </View>
 
-        {/* Categories & Bio Section */}
-        <View style={styles.detailsSection}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Categories</Text>
+        {/* Bio & Categories */}
+        <View style={styles.detailsContainer}>
+          <Text style={[styles.bio, { color: theme.colors.text }]}>{profile.bio}</Text>
           <View style={styles.categoriesRow}>
-            {profile.categories && profile.categories.map((cat: string, index: number) => (
-              <View
-                key={index}
-                style={[styles.categoryBadge, { backgroundColor: theme.colors.primary }]}
-              >
+            {profile.categories.map((cat: string, index: number) => (
+              <View key={index} style={[styles.categoryBadge, { backgroundColor: theme.colors.primary }]}>
                 <Text style={styles.categoryText}>{cat}</Text>
               </View>
             ))}
           </View>
-          <Text style={[styles.bioText, { color: theme.colors.text }]}>{profile.bio}</Text>
         </View>
 
-        {/* Portfolio Management Section */}
-        <View style={styles.portfolioSection}>
-          <View style={styles.portfolioHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>My Portfolio</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('EditPortfolio')}>
-              <Text style={[styles.editText, { color: theme.colors.primary }]}>Edit</Text>
+        {/* Social Profiles */}
+        <View style={styles.socialRow}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Social Profiles</Text>
+          <Text style={styles.socialNote}>
+            Link your social accounts to boost engagement and trust.
+          </Text>
+          <View style={styles.socialIcons}>
+            <TouchableOpacity style={styles.socialIcon} onPress={() => handleSocialPress('instagram', profile.socialAccounts.instagram)}>
+              <Ionicons name="logo-instagram" size={32} color={profile.socialAccounts.instagram.linked ? theme.colors.primary : '#ccc'} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialIcon} onPress={() => handleSocialPress('facebook', profile.socialAccounts.facebook)}>
+              <Ionicons name="logo-facebook" size={32} color={profile.socialAccounts.facebook.linked ? theme.colors.primary : '#ccc'} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialIcon} onPress={() => handleSocialPress('youtube', profile.socialAccounts.youtube)}>
+              <Ionicons name="logo-youtube" size={32} color={profile.socialAccounts.youtube.linked ? theme.colors.primary : '#ccc'} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialIcon} onPress={() => handleSocialPress('twitter', profile.socialAccounts.twitter)}>
+              <Ionicons name="logo-twitter" size={32} color={profile.socialAccounts.twitter.linked ? theme.colors.primary : '#ccc'} />
             </TouchableOpacity>
           </View>
-          <PortfolioManager portfolio={portfolio} refreshPortfolio={fetchPortfolio} />
         </View>
 
-        {/* My Events & My Bookings */}
-        <View style={styles.eventsBookingsRow}>
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: theme.colors.card }]}
-            onPress={() => navigation.navigate('MyEvents')}
-          >
-            <Text style={[styles.actionButtonText, { color: theme.colors.text }]}>My Events</Text>
+        {/* Portfolio Preview */}
+        <View style={styles.portfolioSection}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Portfolio</Text>
+          <ScrollView horizontal contentContainerStyle={styles.portfolioScroll}>
+            {profile.portfolio.map((item: any) => (
+              <TouchableOpacity key={item.id} onPress={() => openPreview(item)}>
+                <Image source={{ uri: item.thumbnail }} style={styles.portfolioThumbnail} />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <TouchableOpacity style={styles.editPortfolioButton} onPress={() => navigation.navigate('EditPortfolio')}>
+            <Text style={[styles.editPortfolioText, { color: theme.colors.primary }]}>Edit Portfolio</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: theme.colors.card }]}
-            onPress={() => navigation.navigate('MyBookings')}
-          >
-            <Text style={[styles.actionButtonText, { color: theme.colors.text }]}>My Bookings</Text>
+        </View>
+
+        {/* Bottom Options */}
+        <View style={styles.bottomOptions}>
+          <TouchableOpacity style={styles.bottomOption} onPress={() => navigation.navigate('MyEvents')}>
+            <Ionicons name="calendar" size={24} color={theme.colors.primary} />
+            <Text style={[styles.bottomOptionText, { color: theme.colors.text }]}>My Events</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.bottomOption} onPress={() => navigation.navigate('MyBookings')}>
+            <Ionicons name="book" size={24} color={theme.colors.primary} />
+            <Text style={[styles.bottomOptionText, { color: theme.colors.text }]}>My Bookings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.bottomOption} onPress={() => navigation.navigate('Settings')}>
+            <Ionicons name="settings" size={24} color={theme.colors.primary} />
+            <Text style={[styles.bottomOptionText, { color: theme.colors.text }]}>Settings</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-      {/* Floating Settings Button */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Settings')}
-        style={[styles.settingsButton, { backgroundColor: theme.colors.primary }]}
+
+      {/* Preview Modal */}
+      <Modal
+        visible={previewVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setPreviewVisible(false)}
       >
-        <Ionicons name="settings" size={24} color="#fff" />
-      </TouchableOpacity>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity style={styles.modalClose} onPress={() => setPreviewVisible(false)}>
+            <Ionicons name="close" size={30} color="#fff" />
+          </TouchableOpacity>
+          {previewItem?.media_type === 'image' ? (
+            <Image source={{ uri: previewItem.url }} style={styles.previewMedia} />
+          ) : previewItem ? (
+            <View style={styles.videoWrapper}>
+              <Video
+                source={{ uri: previewItem.url }}
+                style={styles.previewMedia}
+                controls
+                resizeMode="contain"
+              />
+            </View>
+          ) : null}
+        </View>
+      </Modal>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContent: { paddingHorizontal: 16, paddingVertical: 20, paddingBottom: 80 },
+  contentContainer: { padding: 16, paddingBottom: 80 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  headerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 12,
-    marginBottom: 20,
-  },
+  headerContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   profilePic: { width: 80, height: 80, borderRadius: 40 },
-  headerTextContainer: { marginLeft: 16 },
-  name: { fontSize: 20, fontWeight: 'bold', marginBottom: 4 },
+  headerText: { flex: 1, marginLeft: 12 },
+  name: { fontSize: 20, fontWeight: 'bold' },
   rating: { fontSize: 14 },
-  detailsSection: { marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
-  categoriesRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10 },
-  categoryBadge: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8, marginRight: 8, marginBottom: 8 },
-  categoryText: { color: '#fff', fontSize: 14 },
-  bioText: { fontSize: 16, lineHeight: 22 },
-  portfolioSection: { marginBottom: 20 },
-  portfolioHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  editText: { fontSize: 16 },
-  eventsBookingsRow: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: 16 },
-  actionButton: { flex: 1, padding: 16, borderRadius: 8, marginHorizontal: 8 },
-  actionButtonText: { fontSize: 16, textAlign: 'center' },
-  settingsButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    padding: 12,
-    borderRadius: 30,
-    elevation: 5,
-  },
-  portfolioItem: { flex: 1, margin: 2 },
-  portfolioImage: { width: '100%', aspectRatio: 1, borderRadius: 8 },
+  editButton: { padding: 8 },
+  detailsContainer: { marginBottom: 16 },
+  bio: { fontSize: 16, marginBottom: 8 },
+  categoriesRow: { flexDirection: 'row', flexWrap: 'wrap' },
+  categoryBadge: { paddingVertical: 4, paddingHorizontal: 8, borderRadius: 8, marginRight: 8, marginBottom: 4 },
+  categoryText: { color: '#fff' },
+  socialRow: { marginBottom: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
+  socialNote: { fontSize: 12, color: '#999', marginBottom: 8 },
+  socialIcons: { flexDirection: 'row', marginBottom: 4 },
+  socialIcon: { marginRight: 16 },
+  portfolioSection: { marginBottom: 16 },
+  portfolioScroll: { alignItems: 'center' },
+  portfolioThumbnail: { width: 80, height: 80, borderRadius: 8, marginRight: 8 },
+  editPortfolioButton: { alignSelf: 'center', marginTop: 8 },
+  editPortfolioText: { fontSize: 16, textDecorationLine: 'underline' },
+  bottomOptions: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: '#ccc' },
+  bottomOption: { alignItems: 'center' },
+  bottomOptionText: { marginTop: 4, fontSize: 14 },
+  modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+  modalClose: { position: 'absolute', top: 40, right: 20 },
+  previewMedia: { width: '90%', height: '70%', borderRadius: 12 },
+  videoWrapper: { width: '90%', height: '70%' },
 });
 
+export default ProfileScreen;

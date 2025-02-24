@@ -35,11 +35,100 @@ interface GetAllEventsParams {
   filters?: FiltersType;
   page: number;
 }
+// dummyApi.ts
 
-export const getAllEvents = async (params: { filters?:FiltersType ; page?: number } = {}): Promise<any[]> => {
+export const fetchProfile = async () => {
+  // Simulated API delay
+  await new Promise(res => setTimeout(res, 500));
+  return {
+    name: 'John Doe',
+    bio: 'Artist, Musician & Performer. I create unique visual and audio experiences.',
+    profilePicture: 'https://via.placeholder.com/150',
+    averageRating: 4.5,
+    categories: ['Music', 'Dance'],
+    socialAccounts: {
+      instagram: { linked: true, url: 'https://instagram.com/johndoe' },
+      facebook: { linked: false, url: '' },
+      youtube: { linked: true, url: 'https://youtube.com/channel/XYZ' },
+      twitter: { linked: false, url: '' },
+    },
+    // Correct dummy data example for portfolio items:
+    portfolio: [
+      {
+        id: 'p1',
+        platform: 'youtube',
+        thumbnail: 'https://via.placeholder.com/150/0000FF',
+        title: 'YouTube Video 1',
+        url: 'https://www.youtube.com/watch?v=SqcXvc3ZmRU&list=PLMCXHnjXnTnvo6alSjVkgxV-VH6EPyvoX&ab_channel=GauravSen',
+      },
+      {
+        id: 'p2',
+        platform: 'instagram',
+        thumbnail: 'https://via.placeholder.com/150/FF00FF',
+        title: 'Instagram Post 1',
+        url: 'https://instagram.com/p/ABC',
+      },
+      {
+        id: 'p3',
+        platform: 'facebook',
+        thumbnail: 'https://via.placeholder.com/150/00FF00',
+        title: 'Facebook Photo 1',
+        url: 'https://facebook.com/photo/123',
+      },
+    ]
+
+  };
+};
+
+export const updateProfile = async (updatedProfile: any) => {
+  // Simulate saving profile data
+  await new Promise(res => setTimeout(res, 500));
+  console.log('Profile updated:', updatedProfile);
+  return true;
+};
+
+export const fetchPortfolio = async () => {
+  // Return portfolio data; here we assume it's part of profile
+  const profile = await fetchProfile();
+  return profile.portfolio;
+};
+
+export const updatePortfolio = async (portfolio: any[]) => {
+  // Simulate saving portfolio order
+  await new Promise(res => setTimeout(res, 500));
+  console.log('Portfolio updated:', portfolio);
+  return true;
+};
+
+export const fetchSocialMediaPosts = async (platform: 'instagram' | 'facebook' | 'youtube' | 'twitter') => {
+  // Return dummy posts for each platform
+  const dummyPosts = {
+    instagram: [
+      { id: 'ig1', platform: 'instagram', thumbnail: 'https://via.placeholder.com/150/FF00FF', title: 'Insta Reel 1', url: 'https://instagram.com/p/IG1' },
+      { id: 'ig2', platform: 'instagram', thumbnail: 'https://via.placeholder.com/150/FF00FF', title: 'Insta Reel 2', url: 'https://instagram.com/p/IG2' },
+      { id: 'ig3', platform: 'instagram', thumbnail: 'https://via.placeholder.com/150/FF00FF', title: 'Insta Reel 3', url: 'https://instagram.com/p/IG3' },
+      { id: 'ig4', platform: 'instagram', thumbnail: 'https://via.placeholder.com/150/FF00FF', title: 'Insta Reel 4', url: 'https://instagram.com/p/IG4' },
+    ],
+    facebook: [
+      { id: 'fb1', platform: 'facebook', thumbnail: 'https://via.placeholder.com/150/00FF00', title: 'FB Post 1', url: 'https://facebook.com/post/FB1' },
+    ],
+    youtube: [
+      { id: 'yt1', platform: 'youtube', thumbnail: 'https://via.placeholder.com/150/0000FF', title: 'YouTube Video 1', url: 'https://youtube.com/embed/YT1' },
+      { id: 'yt2', platform: 'youtube', thumbnail: 'https://via.placeholder.com/150/0000FF', title: 'YouTube Video 2', url: 'https://youtube.com/embed/YT2' },
+    ],
+    twitter: [
+      { id: 'tw1', platform: 'twitter', thumbnail: 'https://via.placeholder.com/150/FF9900', title: 'Tweet 1', url: 'https://twitter.com/status/TW1' },
+    ],
+  };
+  await new Promise(res => setTimeout(res, 500));
+  return dummyPosts[platform] || [];
+};
+
+
+export const getAllEvents = async (params: { filters?: FiltersType; page?: number } = {}): Promise<any[]> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  const {filters, page = 1} = params;
+  const { filters, page = 1 } = params;
   let events = dummyEvents;
 
   // Apply category filters if provided
@@ -62,7 +151,7 @@ export const getAllEvents = async (params: { filters?:FiltersType ; page?: numbe
 const PAGE_SIZE = 6;
 
 // Artists APIs
-export const getAllArtists = async (params: { filters?:FiltersType ; page?: number } = {}): Promise<any[]> => {
+export const getAllArtists = async (params: { filters?: FiltersType; page?: number } = {}): Promise<any[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       let artists = dummyArtists;
@@ -103,7 +192,7 @@ export const getTrendingArtists = async (params: { category?: string; page?: num
   return getAllArtists(params);
 };
 
-export const getTrendingEvents = async  (params: { category?: string; page?: number }={}): Promise<any[]> => {
+export const getTrendingEvents = async (params: { category?: string; page?: number } = {}): Promise<any[]> => {
   return getAllEvents(params);
 };
 
