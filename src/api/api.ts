@@ -329,16 +329,63 @@ export const submitApplication = async (eventId: number, coverLetter: string): P
   });
 };
 
-// My Events API
-export const getMyEvents = async (): Promise<any[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([
-        { id: 101, title: "Host Event 1", status: "confirmed", date: "2023-12-01", time: "19:00", location: "Downtown" },
-        { id: 102, title: "Host Event 2", status: "pending", date: "2023-12-05", time: "20:00", location: "Uptown" },
-      ]);
-    }, 500);
-  });
+export type EventStatus = 'open' | 'confirmed' | 'cancelled';
+
+export type Event = {
+  id: string;
+  title: string;
+  dateTime: string;   // scheduled event time (ISO string)
+  createdAt: string;  // event creation time (ISO string)
+  status: EventStatus;
+  location: string;   // new field for location
+};
+
+export const fetchUserEvents = async (): Promise<Event[]> => {
+  // Simulate network delay
+  await new Promise((res) => setTimeout(res, 500));
+  
+  const now = new Date();
+  return [
+    {
+      id: '1',
+      title: 'Summer Concert',
+      dateTime: new Date(now.getTime() + 3600000).toISOString(),  // +1 hour
+      createdAt: new Date(now.getTime() - 86400000).toISOString(), // -1 day
+      status: 'confirmed',
+      location: 'Central Park, NY',
+    },
+    {
+      id: '2',
+      title: 'Art Expo',
+      dateTime: new Date(now.getTime() + 7200000).toISOString(),  // +2 hours
+      createdAt: new Date(now.getTime() - 43200000).toISOString(), // -12 hours
+      status: 'open',
+      location: 'Gallery 42, LA',
+    },
+    {
+      id: '3',
+      title: 'Past Festival',
+      dateTime: new Date(now.getTime() - 3600000).toISOString(),  // -1 hour
+      createdAt: new Date(now.getTime() - 172800000).toISOString(), // -2 days
+      status: 'confirmed',
+      location: 'Old Town Square, Prague',
+    },
+    {
+      id: '4',
+      title: 'Cancelled Show',
+      dateTime: new Date(now.getTime() + 10800000).toISOString(),  // +3 hours
+      createdAt: new Date(now.getTime() - 21600000).toISOString(), // -6 hours
+      status: 'cancelled',
+      location: 'City Theater, Berlin',
+    },
+  ];
+};
+
+export const updateUserEvents = async (events: Event[]): Promise<boolean> => {
+  // Simulate network delay
+  await new Promise((res) => setTimeout(res, 500));
+  console.log('Events updated:', events);
+  return true;
 };
 
 // My Bookings API

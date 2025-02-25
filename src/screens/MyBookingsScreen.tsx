@@ -39,9 +39,6 @@ export default function MyBookingsScreen({ navigation }: any) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background, padding: 16 }}>
       <View style={{ flexDirection: 'row', padding: 16 }}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={30} color={theme.colors.primary} />
-        </TouchableOpacity>
         <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>My Bookings</Text>
       </View>      <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginBottom: 16 }}>
         {['all', 'pending', 'confirmed'].map((status) => (
